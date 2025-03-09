@@ -1,0 +1,124 @@
+groups:
+  - name: system_alerts
+    rules:
+      - alert: HighCPULoad
+        expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU Load on {{ $labels.instance }}"
+          description: "CPU load has exceeded 80% for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Usage on {{ $labels.instance }}"
+          description: "Memory usage has exceeded 80% for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Disk Usage on {{ $labels.instance }}"
+          description: "Disk usage on / mount has exceeded 80% for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: HighSwapUsage
+        expr: (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Swap Usage on {{ $labels.instance }}"
+          description: "Swap usage has exceeded 80% for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: HighIOUsage
+        expr: rate(node_disk_io_time_seconds_total[5m]) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High I/O Wait on {{ $labels.instance }}"
+          description: "I/O wait time is greater than 80% for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: LowDiskSpace
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low Disk Space on {{ $labels.instance }}"
+          description: "Less than 10% disk space available on / mount on {{ $labels.instance }}."
+
+      - alert: HighSystemLoad
+        expr: node_load1 / count(node_cpu_seconds_total{mode="user"}) by (instance) > 4
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High System Load on {{ $labels.instance }}"
+          description: "System load is too high for more than 5 minutes on {{ $labels.instance }}."
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "Prometheus is not able to scrape the target instance {{ $labels.instance }}."
+
+  - name: network_alerts
+    rules:
+      - alert: NetworkLatencyHigh
+        expr: rate(node_network_receive_errs_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Network Latency on {{ $labels.instance }}"
+          description: "More than 10 network errors per second received for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: NetworkInterfaceDown
+        expr: absent(node_network_up{device!="lo"})
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Network Interface Down on {{ $labels.instance }}"
+          description: "One or more network interfaces are down on {{ $labels.instance }}."
+
+      - alert: ProcessCrash
+        expr: node_processes_running < 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical Process Crash on {{ $labels.instance }}"
+          description: "A critical process has stopped running on {{ $labels.instance }}."
+
+  - name: systemd_alerts
+    rules:
+      - alert: SystemdServiceFailed
+        expr: node_systemd_unit_state{state="failed"} > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Systemd Service Failed on {{ $labels.instance }}"
+          description: "One or more systemd services have failed on {{ $labels.instance }}."
+
+      - alert: KernelPanic
+        expr: rate(node_boot_time_seconds[1h]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kernel Panic Detected on {{ $labels.instance }}"
+          description: "A kernel panic or unexpected reboot was detected on {{ $labels.instance }}."
+

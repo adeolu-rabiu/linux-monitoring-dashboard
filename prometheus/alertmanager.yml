@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'slack_and_sms'
+  group_wait: 10s
+  group_interval: 5m
+  repeat_interval: 3h
+
+receivers:
+  - name: 'slack_and_sms'
+    slack_configs:
+      - channel: '#alerts'
+        send_resolved: true
+        api_url: 'https://hooks.slack.com/services/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'
+

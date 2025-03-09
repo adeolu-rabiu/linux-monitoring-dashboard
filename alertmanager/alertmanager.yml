@@ -1,0 +1,16 @@
+route:
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 2m
+  repeat_interval: 1h
+  receiver: 'slack-notifications'
+
+receivers:
+  - name: 'slack-notifications'
+    slack_configs:
+      - send_resolved: true
+        api_url: "https://hooks.slack.com/services/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"
+        channel: "#alerts"
+        title: "{{ .CommonAnnotations.summary }}"
+        text: "{{ .CommonAnnotations.description }}"
+
