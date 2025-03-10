@@ -1,0 +1,67 @@
+AWS Instance Restoration Guide
+===================================
+
+If you need to recreate your AWS monitoring infrastructure from scratch, follow these steps:
+
+1️⃣ **Launch a New EC2 Instance**
+   - Go to AWS Console > EC2 > Launch Instance.
+   - Select an Ubuntu 22.04 LTS AMI (or the one you originally used).
+   - Choose an instance type (e.g., t2.micro or t3.small).
+   - Configure networking (VPC, Subnet, and Security Groups).
+
+2️⃣ **Attach a Security Group with Required Ports**
+   - Allow SSH (Port 22) for remote access.
+   - Allow Prometheus (Port 9090), Node Exporter (Port 9100), Grafana (Port 3000), Alertmanager (Port 9093).
+   - Allow outbound internet access for dependencies.
+
+3️⃣ **Connect to Your EC2 Instance**
+   - Use SSH to connect:
+     ```sh
+     ssh -i your-key.pem ubuntu@your-ec2-public-ip
+     ```
+
+4️⃣ **Install Required Dependencies**
+   - Update system packages:
+     ```sh
+     sudo apt update && sudo apt upgrade -y
+     ```
+   - Install Docker and Docker Compose:
+     ```sh
+     sudo apt install docker.io docker-compose -y
+     sudo systemctl enable --now docker
+     ```
+
+5️⃣ **Clone Your Git Repository**
+   - If you've pushed your monitoring setup to GitHub:
+     ```sh
+     git clone https://github.com/your-username/linux-monitoring-dashboard.git monitoring
+     cd monitoring
+     ```
+
+6️⃣ **Start the Monitoring Stack**
+   - Run the setup using Docker Compose:
+     ```sh
+     docker-compose up -d
+     ```
+
+7️⃣ **Verify Monitoring Services**
+   - **Prometheus:** `http://your-ec2-public-ip:9090`
+   - **Grafana:** `http://your-ec2-public-ip:3000` (Default login: admin/admin)
+   - **Node Exporter:** `http://your-ec2-public-ip:9100/metrics`
+   - **Alertmanager:** `http://your-ec2-public-ip:9093`
+
+8️⃣ **Reconfigure Grafana Dashboards & Slack Alerts**
+   - Import your saved Grafana dashboard JSON if needed.
+   - Reconfigure Alertmanager for Slack notifications.
+
+9️⃣ **Set Up Data Persistence (Optional)**
+   - If you want to persist data across reboots:
+     ```sh
+     docker volume create grafana-data
+     ```
+
+🔹 **Next Steps**
+- Monitor metrics, visualize logs, and set alerts.
+- Automate backups with AWS S3 for data resilience.
+
+**Now you're ready to restart your monitoring system anytime! 🚀**
