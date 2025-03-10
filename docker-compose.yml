@@ -8,8 +8,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./alert.rules.yml:/etc/prometheus/alert.rules.yml
+      - /home/ubuntu/linux-monitoring-dashboard/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /home/ubuntu/linux-monitoring-dashboard/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
     depends_on:
       - alertmanager
       - node-exporter
@@ -21,7 +21,7 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - /home/ubuntu/linux-monitoring-dashboard/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
 
   node-exporter:
     image: prom/node-exporter:v1.6.1
@@ -37,4 +37,11 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana-data:
